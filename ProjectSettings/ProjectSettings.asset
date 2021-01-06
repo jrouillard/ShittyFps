@@ -660,6 +660,7 @@ PlayerSettings:
       daydreamIconForeground: {fileID: 0}
       daydreamIconBackground: {fileID: 0}
   cloudServicesEnabled:
+    Collab: 1
     UNet: 1
   luminIcon:
     m_Name: 
@@ -673,10 +674,10 @@ PlayerSettings:
     m_VersionCode: 1
     m_VersionName: 
   apiCompatibilityLevel: 6
-  cloudProjectId: 
+  cloudProjectId: 4aa7cd0b-7428-4afe-8e0b-2a6e2c4a68cb
   framebufferDepthMemorylessMode: 0
-  projectName: 
-  organizationId: 
+  projectName: Shitty fps
+  organizationId: bef9217-e23f-4d89-b756-919cc785a109
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0
