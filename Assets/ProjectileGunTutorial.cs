@@ -117,7 +117,6 @@ public class ProjectileGunTutorial : MonoBehaviour
         //Instantiate bullet/projectile
         GameObject currentBullet = Instantiate(bullet, attackPoint.position, Quaternion.identity); //store instantiated bullet in currentBullet
         //Rotate bullet to shoot direction
-        Debug.Log(directionWithSpread.normalized);
         currentBullet.transform.forward = directionWithSpread.normalized;
         currentBullet.transform.Rotate(90, 0, 0, Space.Self);
         Object.Destroy(currentBullet, TTL);
@@ -125,10 +124,13 @@ public class ProjectileGunTutorial : MonoBehaviour
         currentBullet.GetComponent<Rigidbody>().AddForce(directionWithSpread.normalized * shootForce, ForceMode.Impulse);
         currentBullet.GetComponent<Rigidbody>().AddForce(fpsCam.transform.up * upwardForce, ForceMode.Impulse);
 
-        //gun.transform.Rotate(Vector3.left * Time.deltaTime * 360f );
         //Instantiate muzzle flash, if you have one
-        if (muzzleFlash != null)
-            Instantiate(muzzleFlash, attackPoint.position, Quaternion.identity);
+        if (muzzleFlash != null) {
+            GameObject muzzle = Instantiate(muzzleFlash, attackPoint.position, Quaternion.identity);
+            muzzle.transform.forward = directionWithoutSpread.normalized;
+            // muzzle.transform.Rotate(0, 270, 0, Space.Self);
+            Object.Destroy(muzzle, 0.02f);
+        }
 
         bulletsLeft--;
         bulletsShot++;
