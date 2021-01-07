@@ -13,6 +13,7 @@ public class GrapplingGun : MonoBehaviour {
     public Transform gunTip, maincamera, player;
     public float maxDistance = 100f;
     private SpringJoint joint;
+    private Vector3 localPoint;
 
     void Awake() {
         lr = GetComponent<LineRenderer>();
@@ -43,12 +44,10 @@ public class GrapplingGun : MonoBehaviour {
         if (Physics.Raycast(maincamera.position, maincamera.forward, out hit, maxDistance, whatIsGrappleable)) {
             grappling = true;
             grapplePoint = hit.point;
+            localPoint = hit.collider.transform.InverseTransformPoint(grapplePoint);
 
-            stuckTo = hit.transform;
+            stuckTo = hit.collider.transform;
             Debug.Log(hit.point);
-            Vector3 diff = stuckTo.position - grapplePoint;
-            offset = Quaternion.FromToRotation(stuckTo.forward, diff.normalized);
-            distance = diff.magnitude;
 
             joint = player.gameObject.AddComponent<SpringJoint>();
             joint.autoConfigureConnectedAnchor = false;
@@ -87,14 +86,11 @@ public class GrapplingGun : MonoBehaviour {
         //If not grappling, don't draw rope
         if (!joint ||!stuckTo) return;
 
-
-        Vector3 dir = offset * stuckTo.forward;
-        grapplePoint = stuckTo.position - (dir * distance);
-
-        currentGrapplePosition = Vector3.Lerp(currentGrapplePosition, grapplePoint, Time.deltaTime * 8f);
-        
+        Vector3 foo = stuckTo.TransformPoint(localPoint);
+        //currentGrapplePosition = Vector3.Lerp(currentGrapplePosition, grapplePoint, Time.deltaTime * 8f);
+        joint.connectedAnchor = foo;
         lr.SetPosition(0, gunTip.position);
-        lr.SetPosition(1, grapplePoint);
+        lr.SetPosition(1, foo);
     }
 
     public bool IsGrappling() {
