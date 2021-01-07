@@ -4,6 +4,9 @@ public class GrapplingGun : MonoBehaviour {
 
     private LineRenderer lr;
     private Vector3 grapplePoint;
+    private Transform stuckTo;
+    private Quaternion offset;
+    private float distance;
     private bool grappling;
     public LayerMask whatIsGrappleable;
     public int button;
@@ -40,6 +43,13 @@ public class GrapplingGun : MonoBehaviour {
         if (Physics.Raycast(maincamera.position, maincamera.forward, out hit, maxDistance, whatIsGrappleable)) {
             grappling = true;
             grapplePoint = hit.point;
+
+            stuckTo = hit.transform;
+            Debug.Log(hit.point);
+            Vector3 diff = stuckTo.position - grapplePoint;
+            offset = Quaternion.FromToRotation(stuckTo.forward, diff.normalized);
+            distance = diff.magnitude;
+
             joint = player.gameObject.AddComponent<SpringJoint>();
             joint.autoConfigureConnectedAnchor = false;
             joint.connectedAnchor = grapplePoint;
@@ -51,7 +61,7 @@ public class GrapplingGun : MonoBehaviour {
             joint.minDistance = distanceFromPoint * 0.25f;
 
             //Adjust these values to fit your game.
-            joint.spring = 20f;
+            joint.spring = 50f;
             joint.damper = 7f;
             joint.massScale = 4.5f;
 
@@ -65,6 +75,7 @@ public class GrapplingGun : MonoBehaviour {
     /// Call whenever we want to stop a grapple
     /// </summary>
     void StopGrapple() {
+        stuckTo = null;
         grappling = false;
         lr.positionCount = 0;
         Destroy(joint);
@@ -74,12 +85,16 @@ public class GrapplingGun : MonoBehaviour {
     
     void DrawRope() {
         //If not grappling, don't draw rope
-        if (!joint) return;
+        if (!joint ||!stuckTo) return;
+
+
+        Vector3 dir = offset * stuckTo.forward;
+        grapplePoint = stuckTo.position - (dir * distance);
 
         currentGrapplePosition = Vector3.Lerp(currentGrapplePosition, grapplePoint, Time.deltaTime * 8f);
         
         lr.SetPosition(0, gunTip.position);
-        lr.SetPosition(1, currentGrapplePosition);
+        lr.SetPosition(1, grapplePoint);
     }
 
     public bool IsGrappling() {
