@@ -21,6 +21,9 @@ public class GrapplingGun : MonoBehaviour {
     public float shootForce;
     private Animator animator;
     private Vector3 localPoint;
+    public float springForce;
+    public float damper;
+    public float massScale;
     
     public float curveSize;
     public float scrollSpeed;
@@ -88,6 +91,10 @@ public class GrapplingGun : MonoBehaviour {
 
     void Awake() {
         lr = GetComponent<LineRenderer>();
+    
+        lr.material.color = Color.red;
+        lr.material.SetColor("_EmissionColor", Color.red * 4);
+        lr.material.EnableKeyword("_EMISSION");
     }
 
     public void Hooked() {
@@ -95,15 +102,21 @@ public class GrapplingGun : MonoBehaviour {
         localPoint = hook.objectHit.InverseTransformPoint(grapplePoint);
 
         float distanceFromPoint = Vector3.Distance(player.position, grapplePoint);
-        AddSpringJoint(grapplePoint, null, distanceFromPoint * 0.25f, distanceFromPoint * 0.8f, 50f, 7f, 4.5f);
+        AddSpringJoint(grapplePoint, null, distanceFromPoint * 0.5f, distanceFromPoint * 0.8f, springForce, damper, massScale);
         
-        float alpha = 1.0f;
-        Gradient gradient = new Gradient();
-        gradient.SetKeys(
-            new GradientColorKey[] { new GradientColorKey(Color.blue, 0.0f), new GradientColorKey(Color.yellow, 1.0f) },
-            new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
-        );
-        lr.colorGradient = gradient;
+        // float alpha = 1.0f;
+        // Gradient gradient = new Gradient();
+        // gradient.SetKeys(
+        //     new GradientColorKey[] { new GradientColorKey(Color.green, 0.0f),  new GradientColorKey(Color.magenta, 0.03f), new GradientColorKey(Color.red, 0.3f) },
+        //     new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
+        // );
+        // lr.colorGradient = gradient;
+        // lr.material.SetColor("_EmissionColor", Color.red);
+
+        
+        lr.material.color = Color.green;
+        lr.material.SetColor("_EmissionColor", Color.green * 4);
+        lr.material.EnableKeyword("_EMISSION");
 
     }
 
@@ -129,7 +142,6 @@ public class GrapplingGun : MonoBehaviour {
             if (distanceHook < 0.005f)
             {
                 Rigidbody hook_rb = hook.transform.GetComponent<Rigidbody>();
-                hook.transform.GetComponent<Collider>().enabled = true;
                 hook_rb.useGravity = false;
                 hook_rb.velocity = Vector3.zero;
                 grappling_rewind = false;
@@ -145,12 +157,16 @@ public class GrapplingGun : MonoBehaviour {
 
     void RecallHook() {
         Destroy(springJoint);
-        hook.launched = false;
         Rigidbody hook_rb = hook.transform.GetComponent<Rigidbody>();
         hook_rb.velocity = Vector3.zero;
         grappling_rewind = true;
-        hook.transform.GetComponent<Collider>().enabled = false;
         hook.hooked = false;
+        if (hook.launched) {
+            hook.launched = false;
+        }
+        lr.material.color = Color.red;
+        lr.material.SetColor("_EmissionColor", Color.red * 4);
+        lr.material.EnableKeyword("_EMISSION");
     }
 
     void ShootHook(Vector3 targetPoint) {
@@ -174,8 +190,9 @@ public class GrapplingGun : MonoBehaviour {
 
     Vector3 CastRay() {
         RaycastHit hit;
-        Ray ray = maincamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        if (Physics.Raycast(ray, out hit, maxDistance)) {
+        
+        Ray ray = new Ray(maincamera.transform.position, maincamera.transform.forward);
+        if (Physics.Raycast(ray, out hit, maxDistance, ~(1<<11))) {
             return hit.point;
         } else {
             return ray.GetPoint(75);
@@ -217,13 +234,15 @@ public class GrapplingGun : MonoBehaviour {
         }
         if (!hook.hooked) {
             
-            float alpha = 1.0f;
-            Gradient gradient = new Gradient();
-            gradient.SetKeys(
-                new GradientColorKey[] { new GradientColorKey(Color.green, 0.0f),  new GradientColorKey(Color.magenta, 0.03f), new GradientColorKey(Color.red, 0.3f) },
-                new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
-            );
-            lr.colorGradient = gradient;
+            // float alpha = 1.0f;
+            // Gradient gradient = new Gradient();
+
+            // gradient.SetKeys(
+            //     new GradientColorKey[] { new GradientColorKey(Color.green, 0.0f),  new GradientColorKey(Color.magenta, 0.03f), new GradientColorKey(Color.red, 0.3f) },
+            //     new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
+            // );
+            // lr.colorGradient = gradient;
+            
             ProcessBounce();
             // DrawSimpleLine();
         } else {
@@ -231,9 +250,11 @@ public class GrapplingGun : MonoBehaviour {
         }
     }
     void DrawSimpleLine() {
-        lr.positionCount = 2;
+        Vector3 middle =  (gunTip.position + grapplePoint)/2;
+        lr.positionCount = 3;
         lr.SetPosition(0, gunTip.position);
-        lr.SetPosition(1, grapplePoint);
+        lr.SetPosition(1, middle);
+        lr.SetPosition(2, grapplePoint);
     }
     public bool IsGrappling() {
         return stuckTo != null;

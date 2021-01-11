@@ -8,13 +8,23 @@ public class Hook : MonoBehaviour
 {
     // Start is called before the first frame update
     
-    bool _hooked;
 
     public LayerMask whatIsGrappleable;
     public UnityEvent hasHooked;
     public Transform objectHit { get; set; }
-    public bool launched { get; set; }
+    bool _launched;
+    public bool launched { 
+        get { return _launched; }
+        set {
+            if (value) {
+                GetComponent<SphereCollider>().enabled = true;
+            } else {
+                GetComponent<SphereCollider>().enabled = false;
+            }
+            _launched = value; 
+        } }
 
+    bool _hooked;
     public bool hooked
     {
         get { return _hooked; }
@@ -45,9 +55,10 @@ public class Hook : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         int layer = collision.gameObject.layer;
+        Debug.Log(launched);
         if (!launched || whatIsGrappleable != (whatIsGrappleable | (1 << layer))) return;
-        hooked = true;
         launched = false;
+        hooked = true;
         transform.parent = collision.collider.gameObject.transform;
         objectHit = collision.collider.gameObject.transform;
         hasHooked.Invoke();

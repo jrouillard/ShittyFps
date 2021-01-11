@@ -9,16 +9,20 @@ public class Crosshair : MonoBehaviour {
     public Transform maincamera;
     private RaycastHit hit;
     
+    public Text distanceUI;
     // Start is called before the first frame update
     void Start() {
         cross.gameObject.SetActive(true);
     }
     // Update is called once per frame
     void Update() {
-        if (Physics.Raycast(maincamera.position, maincamera.forward, 300)) {
-            cross.GetComponent<Image>().material.SetColor("_Color", Color.red);
+        RaycastHit hit;
+        if (Physics.Raycast(maincamera.position, maincamera.forward, out hit, 60, 1<<8)) {
+            cross.GetComponent<Image>().material.SetColor("_Color", Color.green);
+            distanceUI.GetComponent<Text>().text = hit.distance.ToString("0") + "m";
         } else {
             cross.GetComponent<Image>().material.SetColor("_Color", Color.white);
+            distanceUI.GetComponent<Text>().text = "--m";
         }
     }
 }
