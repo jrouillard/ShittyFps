@@ -141,14 +141,7 @@ public class SpiderController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Rigidbody rb = GetComponent<Rigidbody>();
-            rb.useGravity = true;
-            rb.isKinematic = false;
-            rb.AddForce(0, 0, 20, ForceMode.Impulse);
-        }
-        else if (Input.GetKeyDown(KeyCode.LeftControl))
+        if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             bodyHeight -= 0.1f;
         }
