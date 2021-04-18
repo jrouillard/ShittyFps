@@ -91,7 +91,6 @@ public class GrapplingGun : MonoBehaviour {
 
     void Awake() {
         lr = GetComponent<LineRenderer>();
-    
         lr.material.color = Color.red;
         lr.material.SetColor("_EmissionColor", Color.red * 4);
         lr.material.EnableKeyword("_EMISSION");

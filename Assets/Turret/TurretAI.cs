@@ -18,6 +18,7 @@ public class TurretAI : MonoBehaviour
     void Update()
     {
         TargetNearest();
+        tracker.SetSlowSpeed(shooter.isShooting());
     }
 
     void TargetNearest()
@@ -37,8 +38,10 @@ public class TurretAI : MonoBehaviour
                 closestDist = dist;
             }
         }
-
-        tracker.FocusOn(curTarget);
-        shooter.SetTarget(curTarget);
+        if (curTarget != null)
+        {
+            tracker.FocusOn(curTarget);
+            shooter.SetTarget(curTarget);
+        }
     }
 }

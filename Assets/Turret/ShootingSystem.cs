@@ -14,7 +14,7 @@ public class ShootingSystem : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
-        if(!target)
+        if(target == null)
         {
             return;
         }
@@ -26,13 +26,14 @@ public class ShootingSystem : MonoBehaviour {
             float angle = Quaternion.Angle(transform.rotation, Quaternion.LookRotation(target.transform.position - transform.position));
             if (angle < fieldOfView)
             {
-                Shoot();
                 fireTimer = 0.0f;
+                Shoot();
             }
         }
     }
 
-    void Shoot(){
+    void Shoot()
+    {
         if (!projectile)
         {
             return;
@@ -42,6 +43,11 @@ public class ShootingSystem : MonoBehaviour {
         {
             canon.Shoot(projectile, target);
         }
+    }
+
+    public bool isShooting()
+    {
+        return fireTimer <= fireRate;
     }
 
     public void SetTarget(GameObject target){

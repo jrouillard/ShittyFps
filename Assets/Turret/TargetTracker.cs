@@ -10,6 +10,8 @@ public class TargetTracker : MonoBehaviour
     Vector3 lastKnownPosition = Vector3.zero;
     Quaternion lookAtRotation;
 
+    private bool slow;
+
     void Update()
     {
         if (target)
@@ -17,12 +19,14 @@ public class TargetTracker : MonoBehaviour
             if (lastKnownPosition != target.transform.position)
             {
                 lastKnownPosition = target.transform.position;
+                lastKnownPosition.y -= 1f;
                 lookAtRotation = Quaternion.LookRotation(lastKnownPosition - transform.position);
             }
 
             if (transform.rotation != lookAtRotation)
             {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, lookAtRotation, trackingSpeed * Time.deltaTime);
+                float speed = slow ? trackingSpeed / 2f : trackingSpeed;
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, lookAtRotation, speed * Time.deltaTime);
             }
         }
     }
@@ -30,5 +34,10 @@ public class TargetTracker : MonoBehaviour
     public void FocusOn(GameObject target)
     {
         this.target = target;
+    }
+
+    public void SetSlowSpeed(bool slowSpeed)
+    {
+        slow = slowSpeed;
     }
 }
