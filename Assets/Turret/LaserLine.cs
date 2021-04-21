@@ -16,14 +16,16 @@ public class LaserLine : MonoBehaviour
         if (Physics.Raycast(transform.position, transform.forward, out hit, maxDistance))
         {
             CastTo(transform.InverseTransformPoint(hit.point));
-            //impact.Play();
-            impact.transform.position = hit.point - transform.forward;
+            if (!impact.isEmitting)
+            {
+                impact.Play();
+            }
+            impact.transform.position = hit.point;
         }
         else
         {
             CastTo(new Vector3(0, 0, maxDistance));
-            //impact.Play();
-            //impact.Stop();
+            impact.Stop();
         }
     }
 

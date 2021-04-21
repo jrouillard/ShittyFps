@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class SpiderController : MonoBehaviour
@@ -11,9 +12,12 @@ public class SpiderController : MonoBehaviour
     private float jumpHeight = 1.0f;
     private float gravityValue = -9.81f;
     private Vector3 playerVelocity;
-    float horizontalSpeed = 2.0f;
-    float verticalSpeed = 2.0f;
+    public float horizontalSpeed = 100.0f;
+    public float verticalSpeed = 20.0f;
     private List<Matrix4x4> restPosition;
+    private Vector3 initialScale;
+
+    //public List<Transform> hands;
 
     Vector3 GetLocalGroundPosition()
     {
@@ -32,9 +36,9 @@ public class SpiderController : MonoBehaviour
         return transform.TransformPoint(GetLocalGroundPosition());
     }
 
-    // Start is called before the first frame update
     void Start()
     {
+        initialScale = transform.parent.localScale;
         restPosition = new List<Matrix4x4>();
         Vector3 groundPosition = GetGoundPosition();
         foreach(Transform objective in objectives)
@@ -46,7 +50,7 @@ public class SpiderController : MonoBehaviour
         }
     }
 
-    Vector3 FindClosestPoint(Matrix4x4 restPoint, float radius)
+    RaycastHit? FindClosestPoint(Matrix4x4 restPoint, float radius)
     {
         int layerMask = ~(1 << 6);
         RaycastHit hit;
@@ -70,16 +74,12 @@ public class SpiderController : MonoBehaviour
                 Debug.DrawLine(globalA, globalB, Color.red);
             if (Physics.Raycast(globalA, globalB - globalA, out hit, globalDistance, layerMask))
             {
-                return hit.point;
+                return hit;
             }
         }
-        Vector3 position = new Vector3(restPoint[0,3], restPoint[1,3], restPoint[2,3]);
-        return transform.TransformPoint(position);
-    }
-
-    Vector3 CheckObjective(Matrix4x4 restPoint)
-    {
-        return FindClosestPoint(restPoint, 2.5f);
+        return null;
+        //Vector3 position = new Vector3(restPoint[0,3], restPoint[1,3], restPoint[2,3]);
+        //return transform.TransformPoint(position);
     }
 
     void UpdateBody()
@@ -109,21 +109,21 @@ public class SpiderController : MonoBehaviour
         transform.rotation = Quaternion.RotateTowards(transform.rotation, objectiveRotation, step);
 
         Vector3 position = new Vector3();
-        foreach(Transform objective in objectives)
+        for (int i = 1; i < objectives.Count; i++)
         {
-            position += transform.InverseTransformPoint(objective.position);
+            position += transform.InverseTransformPoint(objectives[i].position);
         }
         position /= objectives.Count;
         position.x = 0;
         position.z = 0;
         position.y += bodyHeight;
-        transform.position = Vector3.MoveTowards(transform.position, transform.TransformPoint(position), 0.3f);
+        transform.position = Vector3.MoveTowards(transform.position, transform.TransformPoint(position), 0.3f); //transform.TransformPoint(position); 
     }
 
     void UpdatePosition()
     {
-        float translation = Input.GetAxis("Vertical") * 40.0f;
-        float rotation = Input.GetAxis("Horizontal") * 20.0f;
+        float translation = Input.GetAxis("Vertical") * verticalSpeed;
+        float rotation = Input.GetAxis("Horizontal") * horizontalSpeed;
         translation *= Time.deltaTime;
         rotation *= Time.deltaTime;
         transform.Translate(0, 0, translation);
@@ -134,8 +134,18 @@ public class SpiderController : MonoBehaviour
     {
         for (int i = 0; i < objectives.Count; i++)
         {
-            objectives[i].position = CheckObjective(restPosition[i]);
+            RaycastHit? hit = FindClosestPoint(restPosition[i], 2.5f);
+            if (hit != null)
+            {
+                Transform parent = hit?.transform;
+                Vector3 position = hit?.point ?? new Vector3();
+                if (parent != null) {
+                    objectives[i].SetParent(parent);
+                    objectives[i].position = position;
+                }
+            }
         }
+        transform.parent.SetParent(objectives.Last().parent);
     }
 
     // Update is called once per frame

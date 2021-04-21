@@ -3,7 +3,6 @@ using System.Collections;
 
 public abstract class BaseProjectile : MonoBehaviour {
     public GameObject explosionPrefab;
-    public int TTL;
     public int explosionForce;
     public int explosionRadius;
 

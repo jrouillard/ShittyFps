@@ -47,7 +47,14 @@ public class ShootingSystem : MonoBehaviour {
 
     public bool isShooting()
     {
-        return fireTimer <= fireRate;
+        foreach (Canon canon in canons)
+        {
+            if (canon.isShooting())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void SetTarget(GameObject target){

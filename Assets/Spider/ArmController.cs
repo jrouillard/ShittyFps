@@ -15,11 +15,10 @@ public class BunnyHop
 
     private bool moving = false;
 
-    public void Start(AnimationCurve curve, float animationDuration)
+    public void Start(AnimationCurve ac)
     {
         startAnimationTime = Time.time - 20;
-        this.curve = curve;
-        this.animationDuration = animationDuration;
+        curve = ac;
     }
 
     public void UpdatePositions(Vector3 initial, Vector3 destination)
@@ -30,7 +29,7 @@ public class BunnyHop
         moving = true;
     }
 
-    public Vector3 ComputePosition(Transform transform)
+    public Vector3 ComputePosition()
     {
         if (Time.time >= startAnimationTime + animationDuration)
         {
@@ -38,14 +37,14 @@ public class BunnyHop
             return destination;
         }
 
-        Vector3 localInitial = transform.InverseTransformPoint(initial);
-        Vector3 localDestination = transform.InverseTransformPoint(destination);
+        Vector3 localInitial = initial;
+        Vector3 localDestination = destination;
         Vector3 position = new Vector3();
         float t = (Time.time - startAnimationTime) / animationDuration;
         position.x = Mathf.Lerp(localInitial.x, localDestination.x, t);
         position.z = Mathf.Lerp(localInitial.z, localDestination.z, t);
         position.y = Mathf.Lerp(localInitial.y, localDestination.y, t) + curve.Evaluate(t * curve.keys.Select(k => k.time).Max()) * maxAltitude;
-        return transform.TransformPoint(position);
+        return position;
     }
 
     public bool isMoving()
@@ -54,7 +53,6 @@ public class BunnyHop
     }
 }
 
-[ExecuteInEditMode]
 public class ArmController : MonoBehaviour
 {
 	public Transform shoulder;
@@ -63,31 +61,32 @@ public class ArmController : MonoBehaviour
 	public Transform hand;
     public bool elbowUp;
     public AnimationCurve curve;
-    public UnityEventVector3 groundHit;
-    public float animationDuration;
+    public GameObject globalTarget;
+
+    //public UnityEventVector3 groundHit;
 
     // hop control
     public float maxDistance;
     public float hopAltitude;
     public Transform objective;
     private BunnyHop hop = new BunnyHop();
-    private Vector3 globalTarget;
 
     void Start()
     {
-        globalTarget = objective.position;
+        globalTarget.transform.SetParent(null);
+        globalTarget.transform.position = objective.position;
         hop.maxAltitude = hopAltitude;
-        hop.Start(curve, animationDuration);
+        hop.Start(curve);
     }
 
     void CheckDistance()
     {
         if (!hop.isMoving())
         {
-            float distance = Vector3.Distance(globalTarget, objective.position);
+            float distance = Vector3.Distance(globalTarget.transform.position, objective.position);
             if (distance > maxDistance * transform.lossyScale.x)
             {
-                hop.UpdatePositions(globalTarget, objective.position);
+                hop.UpdatePositions(transform.InverseTransformPoint(globalTarget.transform.position), transform.InverseTransformPoint(objective.position));
             }
         }
     }
@@ -96,10 +95,16 @@ public class ArmController : MonoBehaviour
     {
         if (hop.isMoving())
         {
-            globalTarget = hop.ComputePosition(transform);
+            globalTarget.transform.position = transform.TransformPoint(hop.ComputePosition());
             if (!hop.isMoving())
             {
-                groundHit.Invoke(globalTarget);
+                globalTarget.transform.SetParent(objective.parent);
+                /*RaycastHit hit;
+                if (Physics.Raycast(transform.position, -transform.up, out hit))
+                {
+                    globalTarget.SetParent(hit.collider.gameObject.transform);
+                }*/
+                //groundHit.Invoke(globalTarget.transform.position);
             }
         }
     }
@@ -173,17 +178,17 @@ public class ArmController : MonoBehaviour
             Vector3 localForearm3d = new Vector3(Mathf.LerpUnclamped(localUpperArm.x, localTarget.x, t), p3.y, Mathf.LerpUnclamped(localUpperArm.z, localTarget.z, t));
             //Debug.DrawLine(upperArm.position, currentTransform.TransformPoint(localForearm3d));
             upperArm.LookAt(currentTransform.TransformPoint(localForearm3d));
-            forearm.LookAt(globalTarget);
+            forearm.LookAt(globalTarget.transform.position);
         } else {
-            upperArm.LookAt(globalTarget);
-            forearm.LookAt(globalTarget);
+            upperArm.LookAt(globalTarget.transform.position);
+            forearm.LookAt(globalTarget.transform.position);
         }
     }
 
     void LateUpdate()
     {
         Transform currentTransform = GetComponent<Transform>();
-        Vector3 localTarget = currentTransform.InverseTransformPoint(globalTarget);
+        Vector3 localTarget = currentTransform.InverseTransformPoint(globalTarget.transform.position);
         UpdateShoulder(currentTransform, localTarget);
         UpdateIK(currentTransform, localTarget);
         // hop control

@@ -5,6 +5,8 @@ using UnityEngine;
 public class TargetTracker : MonoBehaviour
 {
     public float trackingSpeed = 10f;
+    public Vector2 extremumX;
+    public Vector2 extremumY;
 
     GameObject target = null;
     Vector3 lastKnownPosition = Vector3.zero;
@@ -22,12 +24,8 @@ public class TargetTracker : MonoBehaviour
                 lastKnownPosition.y -= 1f;
                 lookAtRotation = Quaternion.LookRotation(lastKnownPosition - transform.position);
             }
-
-            if (transform.rotation != lookAtRotation)
-            {
-                float speed = slow ? trackingSpeed / 2f : trackingSpeed;
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, lookAtRotation, speed * Time.deltaTime);
-            }
+            float speed = slow ? trackingSpeed / 4f : trackingSpeed;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, lookAtRotation, speed * Time.deltaTime);
         }
     }
 
