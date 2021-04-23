@@ -15,5 +15,9 @@ public class BeamProjectile : BaseProjectile {
     void Update()
     {
         laser.maxDistance += speed * Time.deltaTime;
+        if (laser.Contact)
+        {
+            //Explode();
+        }
     }
 }

@@ -53,6 +53,7 @@ public class BunnyHop
     }
 }
 
+//[ExecuteInEditMode]
 public class ArmController : MonoBehaviour
 {
 	public Transform shoulder;

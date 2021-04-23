@@ -52,7 +52,7 @@ public class SpiderController : MonoBehaviour
 
     RaycastHit? FindClosestPoint(Matrix4x4 restPoint, float radius)
     {
-        int layerMask = ~(1 << 6);
+        int layerMask = ~(1 << 6) & ~(1 << 20);
         RaycastHit hit;
         const float distance = 40;
 

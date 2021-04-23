@@ -7,6 +7,7 @@ public class LaserLine : MonoBehaviour
     public float maxDistance = 80;
     public ParticleSystem impact;
     public LineRenderer[] lineRenderers;
+    public bool Contact {get; set;}
     // Start is called before the first frame update
 
     // Update is called once per frame
@@ -21,11 +22,13 @@ public class LaserLine : MonoBehaviour
                 impact.Play();
             }
             impact.transform.position = hit.point;
+            Contact = true;
         }
         else
         {
             CastTo(new Vector3(0, 0, maxDistance));
             impact.Stop();
+            Contact = false;
         }
     }
 
